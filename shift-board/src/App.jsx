@@ -1,12 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  CalendarDays, Clock, User, Plus, CheckCircle2, XCircle,
-  Briefcase, AlertCircle, Users, LogOut, ChevronDown, Repeat, Eye, EyeOff
+  CalendarDays, 
+  Clock, 
+  User, 
+  Plus, 
+  CheckCircle2, 
+  XCircle,
+  Briefcase,
+  AlertCircle,
+  Users,
+  LogOut,
+  ChevronDown,
+  Repeat,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { initializeApp } from 'firebase/app';
-import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
+import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
 import { getFirestore, collection, doc, setDoc, onSnapshot } from 'firebase/firestore';
 
+// --- Firebase Setup ---
 const firebaseConfig = {
   apiKey: "AIzaSyBBQ_rwgll4C8iD_WSOZU-94T6C7eWUzcU",
   authDomain: "shift-board-7f8a9.firebaseapp.com",
@@ -55,15 +68,18 @@ export default function App() {
   useEffect(() => {
     if (!sysUser) return;
 
+    // ユーザー情報の同期
     const usersRef = collection(db, 'artifacts', appId, 'public', 'data', 'appUsers');
     const unsubUsers = onSnapshot(usersRef, (snapshot) => {
       const usersData = snapshot.docs.map(doc => ({ ...doc.data() }));
       setAppUsers(usersData);
     }, (error) => console.error("Users sync error:", error));
 
+    // シフト情報の同期
     const shiftsRef = collection(db, 'artifacts', appId, 'public', 'data', 'shifts');
     const unsubShifts = onSnapshot(shiftsRef, (snapshot) => {
       const shiftsData = snapshot.docs.map(doc => ({ ...doc.data() }));
+      // ID（タイムスタンプ）の降順でソートして新しいものを上に
       setShifts(shiftsData.sort((a, b) => Number(b.id) - Number(a.id)));
     }, (error) => console.error("Shifts sync error:", error));
 
